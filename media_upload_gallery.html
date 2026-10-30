@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MediaHub — Photo & Video Gallery</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--muted:#9ba8c7;--text:#f4f7ff;--accent:#7c5cff;--accent2:#23c7a5}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#0b1020,#171332 55%,#0b1020);color:var(--text);min-height:100vh}
+header{padding:22px clamp(16px,4vw,54px);display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid #ffffff18}
+.brand{font-weight:850;font-size:1.35rem;letter-spacing:.3px}.brand span{color:#a998ff}.tag{color:var(--muted);font-size:.9rem}
+main{max-width:1200px;margin:auto;padding:30px clamp(16px,4vw,42px) 60px}
+.hero{padding:28px 0 22px}.eyebrow{color:#a998ff;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:2px}
+h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.08;margin:10px 0 12px;max-width:760px}h1 span{background:linear-gradient(90deg,#9c8aff,#42e2c0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:650px;line-height:1.65}
+.upload{margin:20px 0 30px;padding:25px;border:1.5px dashed #7765d9;border-radius:22px;background:#7c5cff12;text-align:center}
+.upload .symbol{font-size:2.3rem}.upload h2{margin:8px 0;font-size:1.2rem}.upload p{color:var(--muted);margin:6px 0 17px}
+button,.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:750;cursor:pointer;background:var(--accent);color:white;font-size:.94rem;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button:hover,.btn:hover{filter:brightness(1.12)}.secondary{background:#ffffff12;border:1px solid #ffffff22;color:var(--text)}.danger{background:#e34d67}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}.filters{display:flex;gap:8px;flex-wrap:wrap}.filters button{background:#ffffff0c;border:1px solid #ffffff1a}.filters button.active{background:#7c5cff;color:white;border-color:#7c5cff}
+.stats{color:var(--muted);font-size:.9rem}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid #ffffff12;border-radius:17px;overflow:hidden;min-width:0}.preview{height:175px;background:#080d19;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.preview img,.preview video{width:100%;height:100%;object-fit:cover}.fileicon{font-size:3rem}.kind{position:absolute;top:10px;left:10px;background:#080d19d9;border-radius:8px;padding:5px 8px;font-size:.75rem}
+.info{padding:13px}.filename{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:.8rem;color:var(--muted);margin:5px 0 12px}.actions{display:flex;gap:7px}.actions button{flex:1;padding:9px 8px;font-size:.82rem}
+.empty{grid-column:1/-1;text-align:center;padding:55px 18px;border:1px solid #ffffff12;border-radius:18px;color:var(--muted);background:#ffffff05}.empty strong{display:block;color:var(--text);font-size:1.1rem;margin-bottom:7px}
+.note{margin-top:30px;border-radius:14px;padding:14px 16px;background:#f3b84b12;border:1px solid #f3b84b40;color:#f6dca6;font-size:.88rem;line-height:1.55}
+footer{text-align:center;color:#8490ad;font-size:.82rem;padding:25px}
+input[type=file]{display:none}
+@media(max-width:540px){header{align-items:flex-start;flex-direction:column}.upload{padding:20px 12px}.preview{height:155px}}
+</style>
+</head>
+<body>
+<header><div class="brand">✦ Media<span>Hub</span></div><div class="tag">Photos • Videos • Easy Downloads</div></header>
+<main>
+<section class="hero"><div class="eyebrow">Your media space</div><h1>Apni photos aur videos <span>ek jagah</span></h1><p class="sub">Photos aur videos select karke gallery mein dekhein, preview karein aur download karein. Mobile aur computer dono par kaam karta hai.</p></section>
+<section class="upload" id="dropzone"><div class="symbol">☁️</div><h2>Photos / Videos Upload Karein</h2><p>Yahan files drag-and-drop karein ya neeche button dabayein.</p><button id="choose">＋ Files Select Karein</button><input id="files" type="file" accept="image/*,video/*" multiple></section>
+<div class="toolbar"><div class="filters"><button class="active" data-filter="all">Sabhi</button><button data-filter="image">📷 Photos</button><button data-filter="video">▶ Videos</button></div><div class="stats" id="stats">0 files</div></div>
+<section class="grid" id="gallery"><div class="empty"><strong>Gallery abhi khaali hai</strong>Apni pehli photo ya video upload karke shuru karein.</div></section>
+<div class="note"><b>Important:</b> Yeh demo browser mein files ko temporary dikhata hai. Page refresh ya close karne par gallery clear ho sakti hai. Sabhi users ke liye online upload, permanent storage aur shareable website banane ke liye hosting + server/cloud storage setup karna hoga.</div>
+</main>
+<footer>MediaHub • Simple media gallery demo</footer>
+<script>
+const input=document.getElementById('files'), gallery=document.getElementById('gallery'), stats=document.getElementById('stats'), drop=document.getElementById('dropzone');
+let items=[], filter='all';
+const fmt=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:`${(n/1048576).toFixed(1)} MB`;
+document.getElementById('choose').onclick=()=>input.click();
+input.addEventListener('change',e=>{addFiles([...e.target.files]);input.value=''});
+function addFiles(files){for(const file of files){if(!file.type.startsWith('image/')&&!file.type.startsWith('video/'))continue;items.push({file,url:URL.createObjectURL(file),type:file.type.startsWith('image/')?'image':'video',id:crypto.randomUUID()})}render()}
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.background='#7c5cff30'}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.background='#7c5cff12'}));
+drop.addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});
+function render(){const shown=items.filter(x=>filter==='all'||x.type===filter);stats.textContent=`${items.length} files • ${items.filter(x=>x.type==='image').length} photos • ${items.filter(x=>x.type==='video').length} videos`;
+gallery.innerHTML='';if(!shown.length){gallery.innerHTML='<div class="empty"><strong>Is category mein abhi koi file nahi</strong>Upar se photos ya videos select karein.</div>';return}
+for(const item of shown){const card=document.createElement('article');card.className='card';const preview=document.createElement('div');preview.className='preview';const badge=document.createElement('span');badge.className='kind';badge.textContent=item.type==='image'?'PHOTO':'VIDEO';preview.appendChild(badge);
+if(item.type==='image'){const img=document.createElement('img');img.src=item.url;img.alt=item.file.name;preview.appendChild(img)}else{const v=document.createElement('video');v.src=item.url;v.controls=true;v.preload='metadata';preview.appendChild(v)}
+const info=document.createElement('div');info.className='info';const name=document.createElement('div');name.className='filename';name.title=item.file.name;name.textContent=item.file.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=`${fmt(item.file.size)} • ${item.type==='image'?'Photo':'Video'}`;const actions=document.createElement('div');actions.className='actions';
+const dl=document.createElement('button');dl.textContent='⬇ Download';dl.onclick=()=>{const a=document.createElement('a');a.href=item.url;a.download=item.file.name;document.body.appendChild(a);a.click();a.remove()};
+const remove=document.createElement('button');remove.className='secondary';remove.textContent='✕';remove.title='Gallery se hataayein';remove.onclick=()=>{URL.revokeObjectURL(item.url);items=items.filter(x=>x.id!==item.id);render()};
+actions.append(dl,remove);info.append(name,meta,actions);card.append(preview,info);gallery.appendChild(card)}}
+</script>
+</body>
+</html>
